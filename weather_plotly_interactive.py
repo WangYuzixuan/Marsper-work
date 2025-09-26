@@ -9,6 +9,9 @@ from matplotlib.colors import LinearSegmentedColormap
 csv_path = r'C:\Users\Marsper\Desktop\SD5913\assignment code\Marsper-work\123.csv'
 df = pd.read_csv(csv_path)
 
+# 反转数据顺序，让时间从早到晚（8月到9月）
+df = df.iloc[::-1].reset_index(drop=True)
+
 
 # 彩虹渐变色
 rainbow_cmap = LinearSegmentedColormap.from_list('rainbow', ['#2b6cb0','#38b2ac','#68d391','#f6e05e','#f6ad55','#e53e3e','#b83280'])
@@ -35,9 +38,8 @@ frames = []
 for f in range(1, total_frames+1):
     frac = f / total_frames
     n_points = int(1 + frac * (len(df)-1))
-    # 呼吸律动：点大小随帧变化周期性变化
-    breath = 0.7 + 0.3 * np.sin(2 * np.pi * frac)
-    frame_sizes = sizes[:n_points] * breath
+    # 使用原始温度相关的点大小
+    frame_sizes = sizes[:n_points]
     # 每一帧点的颜色为真实温度色彩
     frame_colors = colors[:n_points]
     # 艺术扰动：轻微波浪
@@ -54,8 +56,8 @@ for f in range(1, total_frames+1):
                     opacity=0.92,
                     symbol='circle',
                 ),
-                hovertemplate='<b>%{customdata}</b><br>温度: %{y:.1f}°C',
-                customdata=df['当地时间 香港(机场)'][:n_points],
+                hovertemplate='<b>%{customdata[0]}</b><br>温度: %{customdata[1]:.1f}°C',
+                customdata=list(zip(df['当地时间 香港(机场)'][:n_points], df['T'][:n_points])),
                 showlegend=False
             )
         ],
@@ -76,8 +78,8 @@ fig = go.Figure(
                 opacity=0.92,
                 symbol='circle',
             ),
-            hovertemplate='<b>%{customdata}</b><br>温度: %{y:.1f}°C',
-            customdata=[df['当地时间 香港(机场)'][0]],
+            hovertemplate='<b>%{customdata[0]}</b><br>温度: %{customdata[1]:.1f}°C',
+            customdata=[(df['当地时间 香港(机场)'][0], df['T'][0])],
             showlegend=False
         ),
         # 其余点（不可见），用于初始帧显示全部温度色彩分布
